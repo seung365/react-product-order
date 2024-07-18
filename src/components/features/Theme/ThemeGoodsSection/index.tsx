@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { Link } from 'react-router-dom';
 
 import { useGetThemesProducts } from '@/api/hooks/useGetThemesProducts';
 import { DefaultGoodsItems } from '@/components/common/GoodsItem/Default';
@@ -6,6 +7,7 @@ import { Container } from '@/components/common/layouts/Container';
 import { Grid } from '@/components/common/layouts/Grid';
 import { Spinner } from '@/components/common/Spinner';
 import { VisibilityLoader } from '@/components/common/VisibilityLoader';
+import { getDynamicPath } from '@/routes/path';
 import { breakpoints } from '@/styles/variants';
 
 type Props = {
@@ -29,7 +31,7 @@ export const ThemeGoodsSection = ({ themeKey }: Props) => {
   if (data.pages[0].products.length <= 0) return <TextView>상품이 없어요.</TextView>;
 
   const flattenGoodsList = data.pages.map((page) => page?.products ?? []).flat();
-
+  console.log(flattenGoodsList);
   return (
     <Wrapper>
       <Container>
@@ -41,13 +43,15 @@ export const ThemeGoodsSection = ({ themeKey }: Props) => {
           gap={16}
         >
           {flattenGoodsList.map(({ id, imageURL, name, price, brandInfo }) => (
-            <DefaultGoodsItems
-              key={id}
-              imageSrc={imageURL}
-              title={name}
-              amount={price.sellingPrice}
-              subtitle={brandInfo.name}
-            />
+            <Link to={getDynamicPath.products(String(id))}>
+              <DefaultGoodsItems
+                key={id}
+                imageSrc={imageURL}
+                title={name}
+                amount={price.sellingPrice}
+                subtitle={brandInfo.name}
+              />
+            </Link>
           ))}
         </Grid>
         {hasNextPage && (
