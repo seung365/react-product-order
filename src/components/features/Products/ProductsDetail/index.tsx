@@ -11,6 +11,7 @@ import { Spinner } from '@/components/common/Spinner';
 import { useAuth } from '@/provider/Auth';
 import { RouterPath } from '@/routes/path';
 import { getDynamicPath } from '@/routes/path';
+import { breakpoints } from '@/styles/variants';
 
 type Props = {
   productId: string;
@@ -111,12 +112,18 @@ export const ProductsDetail = ({ productId }: Props) => {
                 display: 'flex',
                 flexDirection: 'row',
                 justifyContent: 'space-between',
+                margin: 10,
               }}
             >
               <div>총 결제 금액 </div>
               <div>{totalPrice}</div>
             </div>
-            <CustomButton theme="black" size="large" onClick={handleNavigate}>
+            <CustomButton
+              theme="black"
+              size="large"
+              style={{ maxWidth: '80%' }}
+              onClick={handleNavigate}
+            >
               나에게 선물하기
             </CustomButton>
           </PriceBox>
@@ -128,10 +135,8 @@ export const ProductsDetail = ({ productId }: Props) => {
 
 const Wrapper = styled.div`
   display: flex;
-  height: 100%;
   justify-content: center;
   align-items: center;
-  padding: 28px 16px 180px;
   font-weight: bold;
 `;
 
@@ -160,16 +165,22 @@ const ButtonWrapper = styled.div`
 `;
 
 const ButtonBox = styled(Box)`
-  height: 60%;
+  heigh: 30%;
+  @media (min-width: ${breakpoints.md}) {
+    height: 60%;
+  }
 `;
 
 const PriceBox = styled(Box)`
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  height: 30%;
+  height: 50%;
   flex-direction: column;
   gap: 10px;
+  @media (min-width: ${breakpoints.md}) {
+    height: 30%;
+  }
 `;
 
 const NoKakao = styled.div`
