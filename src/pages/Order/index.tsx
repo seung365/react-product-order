@@ -5,7 +5,8 @@ import { useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { Button } from '@/components/common/Button';
-import { Image } from '@/components/common/Image';
+import { MyPresentMessage } from '@/components/features/Order/MyPresentMessage';
+import { PresentList } from '@/components/features/Order/\bPresentList';
 
 export const OrderPage = () => {
   const location = useLocation();
@@ -24,8 +25,10 @@ export const OrderPage = () => {
 
     if (check) {
       if (number && message) {
-        if (!Number.isNaN(number as string)) {
+        if (isNaN(Number(number))) {
           alert('현금 영수증 번호는 숫자만 입력해주세요');
+        } else if (message.length > 100) {
+          alert('메시지는 100자 이내로 입력해주세요.');
         } else {
           alert('주문이 완료되었습니다.');
         }
@@ -36,7 +39,11 @@ export const OrderPage = () => {
       }
     } else {
       if (message) {
-        alert('주문이 완료되었습니다.');
+        if (message.length > 100) {
+          alert('메시지는 100자 이내로 입력해주세요.');
+        } else {
+          alert('주문이 완료되었습니다.');
+        }
       } else if (!message) {
         alert('메시지를 입력해주세요');
       }
@@ -54,39 +61,13 @@ export const OrderPage = () => {
         maxWidth={1200}
       >
         <GridItem rowSpan={2} colSpan={2}>
-          <LetterBox>
-            <div>나에게 주는 선물</div>
-            <Input
-              backgroundColor={'lightgray'}
-              placeholder="선물과 함께 보낼 메시지를 적어보세요"
-              height="30%"
-              width="80%"
-              ref={messageRef}
-            ></Input>
-          </LetterBox>
-          <StyledBox>
-            <Box flexDirection={'column'} padding={10} gap={10}>
-              <div style={{ fontWeight: 'bold', marginBottom: 20 }}>선물 내역</div>
-              <div
-                style={{
-                  border: '1px solid lightgray',
-                  borderRadius: 8,
-                  padding: 20,
-                  display: 'flex',
-                  flexDirection: 'row',
-                  gap: 10,
-                }}
-              >
-                <Image width="150px" src={location.state.data.imageURL} />
-                <Box flexDirection={'column'}>
-                  <div style={{ fontWeight: 'lighter' }}>{location.state.data.brandInfo.name}</div>
-                  <div>
-                    {location.state.data.name} x {location.state.itemCount}개
-                  </div>
-                </Box>
-              </div>
-            </Box>
-          </StyledBox>
+          <MyPresentMessage ref={messageRef} />
+          <PresentList
+            imageURL={location.state.productData.imageURL}
+            brandInfoName={location.state.productData.brandInfoName}
+            itemCount={location.state.itemCount}
+            name={location.state.productData.name}
+          />
         </GridItem>
         <GridItem rowSpan={1} colSpan={1} justifyContent={'center'} display={'flex'}>
           <Box
@@ -123,25 +104,6 @@ const Wrapper = styled.div`
   justify-content: center;
   align-items: center;
   font-weight: bold;
-`;
-
-const LetterBox = styled(Box)`
-  height: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  padding: 20px;
-  gap: 10px;
-`;
-
-const StyledBox = styled(Box)`
-  height: 50%;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  flex-direction: row;
-  border-top: 10px solid rgb(237, 237, 237);
 `;
 
 const PayWrapper = styled.div`
