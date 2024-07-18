@@ -24,7 +24,7 @@ export const OrderPage = () => {
 
     if (check) {
       if (number && message) {
-        if (!Number.isNaN(number as string)) {
+        if (isNaN(Number(number))) {
           alert('현금 영수증 번호는 숫자만 입력해주세요');
         } else {
           alert('주문이 완료되었습니다.');
