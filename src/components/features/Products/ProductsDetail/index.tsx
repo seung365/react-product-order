@@ -2,6 +2,7 @@ import { Box, Button, Grid, GridItem } from '@chakra-ui/react';
 import { Input } from '@chakra-ui/react';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useGetProducts } from '@/api/hooks/useGetProducts';
@@ -30,18 +31,13 @@ export const ProductsDetail = ({ productId }: Props) => {
     isError: isProductOptionsError,
   } = useGetProductsOptions(productId);
 
-  const [itemCount, setItemCount] = useState<number>(1);
+  const { control, watch, setValue } = useForm();
+  const itemCount = watch('itemCount');
+  const maxItemCount = productOptionsData?.giftOrderLimit || 100;
+
   const [totalPrice, setTotalPrice] = useState<number>(1);
   const authInfo = useAuth();
   const navigate = useNavigate();
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = Number(event.target.value);
-    if (isNaN(value)) return;
-    if (productOptionsData && itemCount < productOptionsData.giftOrderLimit) {
-      setItemCount(value);
-    }
-  };
 
   const handleNavigate = () => {
     if (!authInfo) {
@@ -65,6 +61,7 @@ export const ProductsDetail = ({ productId }: Props) => {
       </TextView>
     );
   }
+
   if (isProductError || isProductOptionsError) {
     return <Navigate to={RouterPath.notFound} />;
   } // 상세 페이지가 없으면 홈으로
@@ -101,17 +98,56 @@ export const ProductsDetail = ({ productId }: Props) => {
                   alignContent: 'center',
                 }}
               >
-                <Button marginRight={5} size="xs" onClick={() => setItemCount(itemCount - 1)}>
+                <Button
+                  marginRight={5}
+                  size="xs"
+                  onClick={() => {
+                    if (itemCount > 1) {
+                      setValue('itemCount', Number(itemCount) - 1);
+                    }
+                  }}
+                >
                   -
                 </Button>
-                <Input
-                  placeholder={String(itemCount)}
-                  width="40%"
-                  height={'auto'}
-                  value={itemCount}
-                  onChange={handleChange}
+                <Controller
+                  name="itemCount"
+                  control={control}
+                  defaultValue={1}
+                  rules={{
+                    required: '해당 값을 채워야 합니다.',
+                    min: {
+                      value: 1,
+                      message: 'Minimum value is 1',
+                    },
+                    max: {
+                      value: maxItemCount,
+                      message: `Maximum value is ${maxItemCount}`,
+                    },
+                  }}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      width="40%"
+                      height={'auto'}
+                      onChange={(e) => {
+                        let value = Number(e.target.value);
+                        if (value > maxItemCount) {
+                          value = maxItemCount;
+                        }
+                        field.onChange(value);
+                      }}
+                    />
+                  )}
                 />
-                <Button marginLeft={5} size="xs" onClick={() => setItemCount(itemCount + 1)}>
+                <Button
+                  marginLeft={5}
+                  size="xs"
+                  onClick={() => {
+                    if (itemCount < maxItemCount) {
+                      setValue('itemCount', Number(itemCount) + 1);
+                    }
+                  }}
+                >
                   +
                 </Button>
               </div>
