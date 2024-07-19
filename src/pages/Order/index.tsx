@@ -1,7 +1,8 @@
 import { Box, Grid, GridItem, Input, Select } from '@chakra-ui/react';
 import { Checkbox } from '@chakra-ui/react';
 import styled from '@emotion/styled';
-import { useRef, useState } from 'react';
+import { Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';
 
 import { Button } from '@/components/common/Button';
@@ -10,19 +11,13 @@ import { PresentList } from '@/components/features/Order/\bPresentList';
 
 export const OrderPage = () => {
   const location = useLocation();
-  const [check, setCheck] = useState(false);
+  const { control, watch, register } = useForm();
 
-  const numberRef = useRef<HTMLInputElement>(null);
-  const messageRef = useRef<HTMLInputElement>(null);
-
-  const handleCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCheck(e.target.checked);
-  };
+  const check = watch('check');
+  const number = watch('number');
+  const message = watch('message');
 
   const hadleFinish = () => {
-    const number = numberRef.current?.value;
-    const message = messageRef.current?.value;
-
     if (check) {
       if (number && message) {
         if (isNaN(Number(number))) {
@@ -61,7 +56,7 @@ export const OrderPage = () => {
         maxWidth={1200}
       >
         <GridItem rowSpan={2} colSpan={2}>
-          <MyPresentMessage ref={messageRef} />
+          <MyPresentMessage register={register} />
           <PresentList
             imageURL={location.state.productData.imageURL}
             brandInfoName={location.state.productData.brandInfoName}
@@ -81,12 +76,28 @@ export const OrderPage = () => {
           >
             <PayWrapper>결제 정보</PayWrapper>
             <PayWrapperNoBorder>
-              <Checkbox onChange={handleCheck}>현금영수증 신청</Checkbox>
+              <Controller
+                name="check"
+                control={control}
+                defaultValue={false}
+                render={({ field }) => (
+                  <Checkbox
+                    {...field}
+                    isChecked={field.value}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      field.onChange(checked);
+                    }}
+                  >
+                    현금영수증 신청
+                  </Checkbox>
+                )}
+              />
               <Select>
                 <option value="option1">개인 소득 공제</option>
                 <option value="option2">사업자 증빙용</option>
               </Select>
-              <Input placeholder="(-없이) 숫자만 입력해주세요." ref={numberRef}></Input>
+              <Input placeholder="(-없이) 숫자만 입력해주세요." {...register('number')}></Input>
             </PayWrapperNoBorder>
             <PayWrapperBorder>최종 결제 금액 {location.state.totalPrice} 원</PayWrapperBorder>
             <PayButton onClick={hadleFinish}>{location.state.totalPrice} 원 결제하기</PayButton>
