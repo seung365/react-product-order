@@ -15,7 +15,19 @@ export const MyPresentMessage = ({ register }: MyPresentMessageProps) => {
         placeholder="선물과 함께 보낼 메시지를 적어보세요"
         height="30%"
         width="80%"
-        {...register('message')}
+        {...register('message', {
+          validate: (value) => {
+            if (!value) {
+              alert('메시지를 입력해주세요');
+              return false;
+            }
+            if (value.length > 100) {
+              alert('메시지는 100자 이내로 입력해주세요.');
+              return false;
+            }
+            return true;
+          },
+        })}
       ></Input>
     </LetterBox>
   );
