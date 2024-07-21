@@ -42,10 +42,22 @@ export type ProductsResponseData = {
     isAccessableProductPage: boolean;
     name: string;
     price: Price;
+    brandInfo: {
+      id: number;
+      name: string;
+      imageURL: string;
+    };
   };
-  brandInfo: {
-    id: number;
-    name: string;
-    imageURL: string;
+};
+
+export type ProductsOptionsResponseData = {
+  options: {
+    productId: number;
+    productName: string;
+    productPrice: number;
+    hasOption: boolean;
+    giftOrderLimit: number;
+    names: string[];
+    options: string[];
   };
 };

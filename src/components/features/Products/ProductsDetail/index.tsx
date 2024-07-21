@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
 import { useGetProducts } from '@/api/hooks/useGetProducts';
+import { useGetProductsOptions } from '@/api/hooks/useGetProductsOptions';
 import { Button as CustomButton } from '@/components/common/Button';
 import { Image } from '@/components/common/Image';
 import { Spinner } from '@/components/common/Spinner';
@@ -18,7 +19,17 @@ type Props = {
 };
 
 export const ProductsDetail = ({ productId }: Props) => {
-  const { data, isLoading, isError } = useGetProducts(productId);
+  const {
+    data: productData,
+    isLoading: isProductLoading,
+    isError: isProductError,
+  } = useGetProducts(productId);
+  const {
+    data: productOptionsData,
+    isLoading: isProductOptionsLoading,
+    isError: isProductOptionsError,
+  } = useGetProductsOptions(productId);
+
   const [itemCount, setItemCount] = useState<number>(1);
   const [totalPrice, setTotalPrice] = useState<number>(1);
   const authInfo = useAuth();
@@ -27,7 +38,9 @@ export const ProductsDetail = ({ productId }: Props) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number(event.target.value);
     if (isNaN(value)) return;
-    setItemCount(value);
+    if (productOptionsData && itemCount < productOptionsData.giftOrderLimit) {
+      setItemCount(value);
+    }
   };
 
   const handleNavigate = () => {
@@ -35,25 +48,24 @@ export const ProductsDetail = ({ productId }: Props) => {
       const isTrue = window.confirm('로그인이 필요합니다. 로그인 페이지로 이동하겠습니까?');
       if (isTrue) navigate(getDynamicPath.login());
     } else {
-      navigate(RouterPath.order, { state: { itemCount, totalPrice, data } });
+      navigate(RouterPath.order, { state: { itemCount, totalPrice, productData } });
     }
   };
 
   useEffect(() => {
-    if (data) {
-      setTotalPrice(itemCount * data?.price.basicPrice);
+    if (productData) {
+      setTotalPrice(itemCount * productData?.price.basicPrice);
     }
-  }, [data, itemCount]);
+  }, [productData, itemCount]);
 
-  if (isLoading) {
+  if (isProductLoading || isProductOptionsLoading) {
     return (
       <TextView>
         <Spinner />
       </TextView>
     );
   }
-
-  if (isError) {
+  if (isProductError || isProductOptionsError) {
     return <Navigate to={RouterPath.notFound} />;
   } // 상세 페이지가 없으면 홈으로
 
@@ -67,20 +79,20 @@ export const ProductsDetail = ({ productId }: Props) => {
         gap={4}
         maxWidth={1000}
       >
-        <GridItem rowSpan={1} colSpan={1}>
-          <Image src={data?.imageURL}></Image>
+        <GridItem rowSpan={1} colSpan={1} style={{ display: 'flex', justifyContent: 'center' }}>
+          <Image src={productData?.imageURL}></Image>
         </GridItem>
         <GridItem rowSpan={1} colSpan={1}>
-          <FontWrapper style={{ fontWeight: 'lighter' }}>{data?.name}</FontWrapper>
+          <FontWrapper style={{ fontWeight: 'lighter' }}>{productData?.name}</FontWrapper>
           <FontWrapper style={{ marginTop: 10, fontSize: 30 }}>
-            {data?.price.basicPrice} 원
+            {productData?.price.basicPrice} 원
           </FontWrapper>
           <NoKakao>카톡 친구가 아니어도 선물 코드로 선물 할 수 있어요!</NoKakao>
         </GridItem>
-        <GridItem rowSpan={2} colSpan={1} maxWidth="100%" justifyContent={'center'}>
+        <HiddenGridItem rowSpan={2} colSpan={1} maxWidth="100%" justifyContent={'center'}>
           <ButtonBox>
             <ButtonWrapper>
-              <div>{data?.name}</div>
+              <div>{productData?.name}</div>
               <div
                 style={{
                   padding: 10,
@@ -127,7 +139,7 @@ export const ProductsDetail = ({ productId }: Props) => {
               나에게 선물하기
             </CustomButton>
           </PriceBox>
-        </GridItem>
+        </HiddenGridItem>
       </Grid>
     </Wrapper>
   );
@@ -160,12 +172,16 @@ const ButtonWrapper = styled.div`
   justify-content: center;
   gap: 10px;
   border: 1px solid lightgray;
+  width: 80%;
   padding: 16px;
   border-radius: 8px;
+  height: 30%;
 `;
 
 const ButtonBox = styled(Box)`
   heigh: 30%;
+  display: flex;
+  justify-content: center;
   @media (min-width: ${breakpoints.md}) {
     height: 60%;
   }
@@ -190,4 +206,10 @@ const NoKakao = styled.div`
   justify-content: flex-start;
   margin-top: 50px;
   padding: 20px;
+`;
+
+const HiddenGridItem = styled(GridItem)`
+  @media (max-width: ${breakpoints.sm}) {
+    display: none;
+  }
 `;
